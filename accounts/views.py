@@ -1,41 +1,133 @@
-from rest_framework import generics, permissions, response
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework_simplejwt.tokens import RefreshToken
-from django.core import signing
-from django.conf import settings
-from .models import User
-from .serializers import RegisterSerializer, LoginSerializer, UserSerializer
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from django.contrib.auth import authenticate
 
-class RegisterView(generics.CreateAPIView):
-    serializer_class = RegisterSerializer
-    permission_classes = [permissions.AllowAny]
+from .serializers import (
+    RegisterSerializer,
+    LoginSerializer,
+    UserSerializer,
+    ProfileUpdateSerializer
+)
+from .utils import create_tokens
+from .models import normalize_phone
 
-@api_view(["POST"])
-@permission_classes([permissions.AllowAny])
-def login_view(request):
-    ser = LoginSerializer(data=request.data); ser.is_valid(raise_exception=True)
-    user = ser.validated_data["user"]
-    refresh = RefreshToken.for_user(user)
-    return response.Response({
-        "user": UserSerializer(user).data,
-        "access": str(refresh.access_token),
-        "refresh": str(refresh),
-    })
 
-@api_view(["GET"])
-def me(request):
-    return response.Response(UserSerializer(request.user).data)
+# ==========================
+#   РЕГИСТРАЦИЯ
+# ==========================
 
-@api_view(["POST"])
-@permission_classes([permissions.AllowAny])
-def verify_email(request):
-    token = request.data.get("token")
-    data = signing.loads(token, salt="email-verify", max_age=60*60*24*3)
-    user = User.objects.get(id=data["uid"])
-    user.email_verified = True
-    user.save()
-    return response.Response({"ok": True})
+class RegisterView(APIView):
+    permission_classes = [AllowAny]
 
-@api_view(["POST"])
-def logout_view(request):
-    return response.Response({"ok": True})
+    def post(self, request):
+        serializer = RegisterSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"ok": True, "msg": "Аккаунт успешно создан"})
+        return Response({"ok": False, "errors": serializer.errors}, status=400)
+
+
+# ==========================
+#   ВХОД
+# ==========================
+
+class LoginView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = LoginSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response({"ok": False, "errors": serializer.errors}, status=400)
+
+        phone = normalize_phone(serializer.validated_data["phone"])
+        password = serializer.validated_data["password"]
+
+        user = authenticate(phone=phone, password=password)
+
+        if not user:
+            return Response({"ok": False, "error": "Неверный номер или пароль"}, status=400)
+
+        return Response({"ok": True, **create_tokens(user)})
+
+
+# ==========================
+#   ВЫХОД
+# ==========================
+
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        return Response({"ok": True, "msg": "Выход выполнен"})
+
+
+# ==========================
+#   ПРОФИЛЬ — ТЕКУЩИЙ ПОЛЬЗОВАТЕЛЬ
+# ==========================
+
+class MeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        return Response({"ok": True, "user": UserSerializer(request.user, context={"request": request}).data})
+
+
+# ==========================
+#   ОБНОВЛЕНИЕ ПРОФИЛЯ (ИМЯ)
+# ==========================
+
+class ProfileUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = ProfileUpdateSerializer(
+            request.user,
+            data=request.data,
+            partial=True
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"ok": True, "msg": "Профиль обновлён"})
+
+        return Response({"ok": False, "errors": serializer.errors}, status=400)
+
+
+# ==========================
+#   ЗАГРУЗКА АВАТАРКИ (ФОТО)
+# ==========================
+
+class UploadAvatarView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+
+        if "avatar" not in request.FILES:
+            return Response({"ok": False, "error": "Файл не найден"}, status=400)
+
+        # Удаляем старое фото
+        if user.avatar:
+            user.avatar.delete()
+
+        # Сохраняем новое фото
+        user.avatar = request.FILES["avatar"]
+        user.save()
+
+        return Response({
+            "ok": True,
+            "avatar": request.build_absolute_uri(user.avatar.url)
+        })
+class AvatarUploadView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = AvatarUploadSerializer(
+            request.user,
+            data=request.data,
+            partial=True
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"ok": True, "avatar": request.user.avatar.url})
+        return Response({"ok": False, "errors": serializer.errors}, status=400)

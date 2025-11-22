@@ -1,60 +1,61 @@
-from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
+from django.contrib.auth.base_user import BaseUserManager
 
+
+# Роли пользователей
 class Roles(models.TextChoices):
     CLIENT = "client", "Клиент"
     COURIER = "courier", "Курьер"
-    ADMIN = "admin", "Администратор"
+    ADMIN = "admin", "Админ"
 
+
+# Менеджер пользователя
 class UserManager(BaseUserManager):
-    use_in_migrations = True
+    def create_user(self, phone, password=None, **extra_fields):
+        if not phone:
+            raise ValueError("Телефон обязателен")
 
-    def _create_user(self, email, password, **extra_fields):
-        if not email:
-            raise ValueError("Email обязателен")
-        email = self.normalize_email(email)
-        user = self.model(email=email, **extra_fields)
+        phone = self.normalize_email(phone)  # можно заменить при желании
+        user = self.model(phone=phone, **extra_fields)
         user.set_password(password)
-        user.save(using=self._db)
+        user.save()
         return user
 
-    def create_user(self, email, password=None, **extra_fields):
-        extra_fields.setdefault("is_staff", False)
-        extra_fields.setdefault("is_superuser", False)
-        return self._create_user(email, password, **extra_fields)
-
-    def create_superuser(self, email, password=None, **extra_fields):
+    def create_superuser(self, phone, password=None, **extra_fields):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
-        extra_fields.setdefault("role", "admin")
-        if extra_fields.get("is_staff") is not True:
-            raise ValueError("Суперпользователь должен иметь is_staff=True")
-        if extra_fields.get("is_superuser") is not True:
-            raise ValueError("Суперпользователь должен иметь is_superuser=True")
-        return self._create_user(email, password, **extra_fields)
 
-class User(AbstractUser):
-    username = None
-    email = models.EmailField(unique=True)
+        return self.create_user(phone, password, **extra_fields)
 
-    name = models.CharField(max_length=150, blank=True)
-    role = models.CharField(max_length=12, choices=Roles.choices, default=Roles.CLIENT)
-    phone = models.CharField(max_length=20, blank=True)
-    default_address = models.CharField(max_length=255, blank=True)
-    entrance = models.CharField(max_length=50, blank=True)
-    floor = models.CharField(max_length=50, blank=True)
-    intercom = models.CharField(max_length=50, blank=True)
-    iin = models.CharField(max_length=12, blank=True)
-    avatar_url = models.URLField(blank=True)
-    rating = models.FloatField(default=5.0)
-    balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    email_verified = models.BooleanField(default=False)
-    working_districts = models.CharField(max_length=200, blank=True)
 
-    USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = []  # username не нужен
+# Основная модель User
+class User(AbstractBaseUser, PermissionsMixin):
+    phone = models.CharField(max_length=20, unique=True)
+    name = models.CharField(max_length=255, null=True, blank=True)
+    role = models.CharField(max_length=20, choices=Roles.choices, default=Roles.CLIENT)
 
-    objects = UserManager()  # 👈 ВАЖНО — подключаем новый менеджер
+    avatar = models.ImageField(upload_to="avatars/", null=True, blank=True)
+
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+
+    USERNAME_FIELD = "phone"
+    REQUIRED_FIELDS = []
+
+    objects = UserManager()
 
     def __str__(self):
-        return f"{self.email} ({self.role})"
+        return self.phone
+
+
+# Функция нормализации телефона
+def normalize_phone(phone: str):
+    phone = phone.strip().replace(" ", "").replace("-", "")
+    if phone.startswith("+"):
+        return phone
+    if phone.startswith("8"):
+        return "+7" + phone[1:]
+    if phone.startswith("7"):
+        return "+7" + phone[1:]
+    return phone

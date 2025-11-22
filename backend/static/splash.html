@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Click&Clean</title>
+
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/animations.css">
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #18b06d, #0f8e57);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .splash-logo {
+            text-align: center;
+            animation: fadeIn 0.7s ease forwards;
+        }
+
+        .splash-logo img {
+            width: 140px;
+            animation: pulse 1.5s infinite ease-in-out;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.08);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .fade-out {
+            animation: fadeOut 0.7s ease forwards;
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+
+            to {
+                opacity: 0;
+                transform: scale(1.2);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="splash-user" id="splash">
+        <img src="assets/user.png" alt="">
+        <h1 style="color:white; margin-top:12px; font-size:28px;">Click&Clean</h1>
+    </div>
+<div class="bottom-nav">
+    <div class="nav-item">
+        <img src="./assets/icons/home.svg">
+        Главная
+    </div>
+
+    <div class="nav-item">
+        <img src="./assets/icons/courier.svg">
+        Курьер
+    </div>
+
+    <div class="nav-item">
+        <img src="./assets/icons/user.svg">
+        Профиль
+    </div>
+
+    <div class="nav-item">
+        <img src="./assets/icons/theme.svg">
+        Тема
+    </div>
+</div>
+
+    <script>
+        setTimeout(() => {
+            document.getElementById("splash").classList.add("fade-out");
+        }, 1200);
+
+        setTimeout(() => {
+            window.location.href = "index.html";
+        }, 1800);
+    </script>
+
+</body>
+
+</html>

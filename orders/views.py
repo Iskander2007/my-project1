@@ -3,7 +3,6 @@ from rest_framework.decorators import api_view, permission_classes
 from django.utils import timezone
 from django.db.models import Q
 from accounts.permissions import IsClient, IsCourier, IsAdmin
-from accounts.models import Roles
 from .models import Order, OrderStatus, OrderLog
 from .serializers import OrderListSerializer, OrderCreateSerializer
 from .filters import filter_orders

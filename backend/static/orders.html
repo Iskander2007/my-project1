@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Click&Clean — Новый заказ</title>
+
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/ui.css">
+  <link rel="stylesheet" href="css/animations.css">
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+  <div class="app-container page-transition">
+
+    <h2 style="margin-bottom: 6px;">Создать заказ</h2>
+    <p style="color: var(--text-muted); margin-bottom: 18px;">Выберите район и время</p>
+
+
+    <!-- РАЙОН -->
+    <div class="glass-card card-enter" style="margin-bottom: 16px;">
+      <h3 class="card-title">Район</h3>
+
+      <select id="district-select" class="select-role" style="width: 100%;">
+        <option>Загрузка...</option>
+      </select>
+    </div>
+
+
+    <!-- ВРЕМЯ -->
+    <div class="glass-card card-enter" style="margin-bottom: 16px;">
+      <h3 class="card-title">Время</h3>
+
+      <select id="slot-select" class="select-role" style="width: 100%;">
+        <option>Загрузка...</option>
+      </select>
+    </div>
+
+
+    <!-- КНОПКА СОЗДАТЬ -->
+    <button id="confirm-order-btn" class="btn-primary">
+      Подтвердить заказ
+    </button>
+
+  </div>
+
+
+  <!-- НИЖНЕЕ МЕНЮ -->
+  <div class="bottom-nav">
+    <div class="nav-item" onclick="goHome()">
+      <img src="assets/icons/home.svg">
+      Главная
+    </div>
+  
+    <div class="nav-item" onclick="goCourier()">
+      <img src="assets/icons/courier.svg">
+      Курьер
+    </div>
+  
+    <div class="nav-item" onclick="goProfile()">
+      <img src="assets/icons/user.svg">
+      Профиль
+    </div>
+  
+    <div class="nav-item" onclick="toggleTheme()">
+      <img src="assets/icons/theme.svg">
+      Тема
+    </div>
+  </div>
+  <div class="bottom-nav">
+    <div class="nav-item">
+      <img src="./assets/icons/home.svg">
+      Главная
+    </div>
+  
+    <div class="nav-item">
+      <img src="./assets/icons/courier.svg">
+      Курьер
+    </div>
+  
+    <div class="nav-item">
+      <img src="./assets/icons/user.svg">
+      Профиль
+    </div>
+  
+    <div class="nav-item">
+      <img src="./assets/icons/theme.svg">
+      Тема
+    </div>
+  </div>
+
+
+
+  <script src="js/api.js"></script>
+  <script src="js/orders.js"></script>
+
+</body>
+
+</html>
