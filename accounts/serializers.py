@@ -1,21 +1,22 @@
 from rest_framework import serializers
+
 from .models import User, normalize_phone
 
 
 class UserSerializer(serializers.ModelSerializer):
+    avatar_url = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = [
-            "id", "phone", "name", "role",
-            "avatar", "balance",
-            "rating", "orders_completed",
-            "last_online", "created_at",
-        ]
-        def get_avatar(self, obj):
-            if obj.avatar:
-               request = self.context.get("request")
-               return request.build_absolute_uri(obj.avatar.url)
-            return None
+        fields = ["id", "phone", "name", "role", "avatar_url", "is_active"]
+
+    def get_avatar_url(self, obj):
+        if obj.avatar and "request" in self.context:
+            request = self.context["request"]
+            return request.build_absolute_uri(obj.avatar.url)
+        if obj.avatar:
+            return obj.avatar.url
+        return None
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -23,7 +24,10 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["phone", "password", "role"]
+        fields = ["name", "phone", "password", "role"]
+        extra_kwargs = {
+            "name": {"required": False, "allow_blank": True},
+        }
 
     def validate_phone(self, value):
         return normalize_phone(value)

@@ -1,0 +1,130 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Click&Clean — Курьер</title>
+
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/ui.css' %}">
+    <link rel="stylesheet" href="{% static 'css/animations.css' %}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body class="aurora-body">
+
+    <div class="background-shapes"></div>
+
+    <div class="app-container page-transition">
+
+        <div class="glass-card courier-hero card-enter">
+            <div>
+                <p class="eyebrow">Ваш профиль</p>
+                <h2 id="courier-name">Загрузка...</h2>
+                <p id="courier-phone" class="profile-phone">—</p>
+            </div>
+            <span id="courier-role" class="status-pill">—</span>
+        </div>
+
+        <!-- Статус -->
+        <div class="glass-card card-enter" style="margin-bottom: 16px;">
+            <h3 class="card-title">Статус</h3>
+
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div id="courier-status" class="status-dot offline">Оффлайн</div>
+
+                <label class="switch">
+                    <input type="checkbox" id="status-toggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Активный заказ -->
+        <div id="active-order-wrapper" class="glass-card card-enter active-order-card hidden">
+            <div class="active-order-header">
+                <div>
+                    <p class="eyebrow">Текущий заказ</p>
+                    <h3 id="active-order-title">—</h3>
+                    <p id="active-order-address" class="order-info">—</p>
+                </div>
+                <div id="active-order-timer" class="timer-chip">00:00</div>
+            </div>
+            <div id="active-order-meta" class="active-order-meta"></div>
+            <div id="active-order-map" class="mini-map"></div>
+            <button id="complete-order-btn" class="btn-primary full-btn" disabled>Завершить заказ</button>
+        </div>
+
+        <!-- Карта районов -->
+        <div class="glass-card card-enter" style="margin-bottom: 16px;">
+            <h3 class="card-title">Активные зоны</h3>
+
+            <div id="courier-map" class="fake-map">
+                <div class="zone z1"></div>
+                <div class="zone z2"></div>
+                <div class="zone z3"></div>
+                <div class="zone z4"></div>
+            </div>
+        </div>
+
+        <!-- Лента заказов -->
+        <h3 class="section-title compact">Доступные заказы</h3>
+
+        <div id="courier-orders" style="margin-top: 10px;">
+            <div class="skeleton" style="height: 70px; margin-bottom: 10px;"></div>
+            <div class="skeleton" style="height: 70px; margin-bottom: 10px;"></div>
+        </div>
+
+    </div>
+
+    <!-- НИЖНЕЕ МЕНЮ -->
+    <div class="bottom-nav">
+        <div class="nav-item" onclick="goHome()">
+            <img src="{% static 'icons/assets/nav-home.svg' %}">
+            Главная
+        </div>
+
+        <div class="nav-item active" onclick="goCourier()">
+            <img src="{% static 'icons/assets/nav-courier.svg' %}">
+            Курьер
+        </div>
+
+        <div class="nav-item" onclick="goProfile()">
+            <img src="{% static 'icons/assets/nav-profile.svg' %}">
+            Профиль
+        </div>
+
+        <div class="nav-item" onclick="toggleTheme()">
+            <img src="{% static 'icons/assets/nav-theme.svg' %}">
+            Тема
+        </div>
+    </div>
+
+    <script src="{% static 'js/api.js' %}"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="{% static 'js/courier.js' %}"></script>
+    <script>
+        // Функции перехода между страницами
+        function goHome() {
+            window.location.href = '/';
+        }
+        function goCourier() {
+            window.location.href = '/courier';
+        }
+        function goProfile() {
+            window.location.href = '/profile';
+        }
+        function toggleTheme() {
+            document.body.classList.toggle('dark');
+        }
+    </script>
+
+</body>
+
+</html>

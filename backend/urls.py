@@ -1,53 +1,57 @@
+from django.contrib import admin
+from django.urls import path, include
+from django.http import JsonResponse
 from django.views.generic import TemplateView
 from django.conf import settings
 from django.conf.urls.static import static
-
-urlpatterns = [
-    path('', TemplateView.as_view(template_name="index.html")),
-] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-from django.contrib import admin
-from django.urls import path
-from django.http import JsonResponse
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import permissions, response
 
 # AUTH
 from accounts.views import (
-    RegisterView,
-    LoginView,
-    LogoutView,
-    MeView,
-    ProfileUpdateView,
-    AvatarUploadView,
+    RegisterView, LoginView, LogoutView,
+    MeView, ProfileUpdateView, AvatarUploadView
 )
 
-# OTHER APPS
+# META
 from meta.views import DistrictList, slots_list
+
+# ORDERS
 from orders.views import (
-    OrdersFeed, MyOrdersClient, CreateOrder,
+    OrdersFeed, MyOrdersClient, MyCourierOrders, CreateOrder,
     take_order, cancel_order, mark_failed, complete_order
 )
+
+# WALLET
 from wallet.views import deposit, withdraw
 
-# STATIC + FRONTEND
-import os
-from django.conf import settings
-from django.conf.urls.static import static
 
-
+# --- API HEALTH ---
 @api_view(["GET"])
 @permission_classes([permissions.AllowAny])
 def health(_):
     return response.Response({"ok": True})
 
 
-def root(_):
-    return JsonResponse({"service": "Click&Clean API", "status": "ok"})
+# --- Главная: отдаём фронтенд ---
+def root_html(_):
+    return TemplateView.as_view(template_name="index.html")(_)
 
 
 urlpatterns = [
-    path("", root),
+    # Главная — фронтенд
+    path("", root_html),
+    #1
+    path("login", TemplateView.as_view(template_name="login.html")),
+    path("register", TemplateView.as_view(template_name="register.html")),
+    path("profile", TemplateView.as_view(template_name="profile.html")),
+    path("courier", TemplateView.as_view(template_name="courier.html")),
+    path("client", TemplateView.as_view(template_name="client.html")),
+    path("orders", TemplateView.as_view(template_name="orders.html")),
+    path("orders/new", TemplateView.as_view(template_name="orders.html")),
+
+    # Admin
     path("admin/", admin.site.urls),
 
     # AUTH
@@ -65,6 +69,7 @@ urlpatterns = [
     # ORDERS
     path("api/orders", OrdersFeed.as_view()),
     path("api/my/orders", MyOrdersClient.as_view()),
+    path("api/my/courier/orders", MyCourierOrders.as_view()),
     path("api/orders/create", CreateOrder.as_view()),
     path("api/orders/<int:pk>/take", take_order),
     path("api/orders/<int:pk>/cancel", cancel_order),
@@ -74,16 +79,12 @@ urlpatterns = [
     # WALLET
     path("api/wallet/deposit", deposit),
     path("api/wallet/withdraw", withdraw),
+
+    # API health
+    path("api/health", health),
 ]
 
 
-# 👇 STATIC / MEDIA
+# STATIC / MEDIA
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-
-# 👇 FRONTEND (HTML, CSS, JS, IMG)
-FRONTEND_PATH = os.path.join(os.path.dirname(settings.BASE_DIR), "ClickClear", "frontend")
-if not os.path.exists(FRONTEND_PATH):
-    FRONTEND_PATH = os.path.join(settings.BASE_DIR, "frontend")
-
-urlpatterns += static("/frontend/", document_root=FRONTEND_PATH)

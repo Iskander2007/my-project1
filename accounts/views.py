@@ -7,7 +7,8 @@ from .serializers import (
     RegisterSerializer,
     LoginSerializer,
     UserSerializer,
-    ProfileUpdateSerializer
+    ProfileUpdateSerializer,
+    AvatarUploadSerializer,
 )
 from .utils import create_tokens
 from .models import normalize_phone
@@ -97,27 +98,6 @@ class ProfileUpdateView(APIView):
 #   ЗАГРУЗКА АВАТАРКИ (ФОТО)
 # ==========================
 
-class UploadAvatarView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        user = request.user
-
-        if "avatar" not in request.FILES:
-            return Response({"ok": False, "error": "Файл не найден"}, status=400)
-
-        # Удаляем старое фото
-        if user.avatar:
-            user.avatar.delete()
-
-        # Сохраняем новое фото
-        user.avatar = request.FILES["avatar"]
-        user.save()
-
-        return Response({
-            "ok": True,
-            "avatar": request.build_absolute_uri(user.avatar.url)
-        })
 class AvatarUploadView(APIView):
     permission_classes = [IsAuthenticated]
 

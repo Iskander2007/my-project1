@@ -17,8 +17,14 @@ DEBUG = os.getenv("DEBUG", "0") == "1"
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
-    "clickclear-backend.onrender.com"
+    "clickclear-backend.onrender.com",
+    "172.31.3.238",
+    "my-project1-xtw2.onrender.com",
 ]
+
+render_host = os.getenv("RENDER_EXTERNAL_HOSTNAME")
+if render_host:
+    ALLOWED_HOSTS.append(render_host)
 
 
 # APPLICATIONS
@@ -40,7 +46,7 @@ INSTALLED_APPS = [
     "orders",
     "wallet",
     "meta",
-    "frontend",
+    # "frontend",  # Удалено, так как нет Django-приложения frontend
 ]
 
 
@@ -61,7 +67,9 @@ ROOT_URLCONF = "backend.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS":  [
+            BASE_DIR / 'backend' / 'templates'
+            ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -145,7 +153,10 @@ AUTH_USER_MODEL = "accounts.User"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 STATICFILES_DIRS = [
-    BASE_DIR / "frontend",
+    BASE_DIR / "backend" / "static",
 ]
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+
+

@@ -1,0 +1,133 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Click&Clean</title>
+
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/animations.css' %}">
+
+    <style>
+        .splash-body {
+            background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.25), transparent 45%),
+                linear-gradient(135deg, #0b486b, #0f2027, #18b06d);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .splash-logo {
+            text-align: center;
+            animation: fadeIn 0.7s ease forwards;
+            position: relative;
+            z-index: 1;
+        }
+
+        .splash-logo img {
+            width: 140px;
+            animation: pulse 1.5s infinite ease-in-out;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.08);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .fade-out {
+            animation: fadeOut 0.7s ease forwards;
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+
+            to {
+                opacity: 0;
+                transform: scale(1.2);
+            }
+        }
+
+        .splash-body::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 80% 0%, rgba(102, 126, 234, 0.35), transparent 35%);
+            opacity: 0.8;
+            animation: pulseBackground 12s ease-in-out infinite;
+        }
+
+        @keyframes pulseBackground {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+
+<body class="splash-body">
+
+    <div class="splash-user" id="splash">
+        <img src="{% static 'icons/assets/user.png' %}" alt="">
+        <h1 style="color:white; margin-top:12px; font-size:28px;">Click&Clean</h1>
+    </div>
+    <div class="bottom-nav">
+        <div class="nav-item">
+            <img src="{% static 'icons/assets/nav-home.svg' %}">
+            Главная
+        </div>
+
+        <div class="nav-item">
+            <img src="{% static 'icons/assets/nav-courier.svg' %}">
+            Курьер
+        </div>
+
+        <div class="nav-item">
+            <img src="{% static 'icons/assets/nav-profile.svg' %}">
+            Профиль
+        </div>
+
+        <div class="nav-item">
+            <img src="{% static 'icons/assets/nav-theme.svg' %}">
+            Тема
+        </div>
+    </div>
+
+    <script>
+        setTimeout(() => {
+            document.getElementById("splash").classList.add("fade-out");
+        }, 1200);
+
+        setTimeout(() => {
+            window.location.href = "index.html";
+        }, 1800);
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,296 @@
+/* ========================================
+   CLICK&CLEAN — UI COMPONENTS
+   Кнопки, карточки, элементы интерфейса
+   ======================================== */
+
+/* ======= КНОПКИ ======= */
+
+.btn-primary {
+    width: 100%;
+    padding: 16px;
+    background: var(--green-main);
+    color: var(--white);
+    border: none;
+    border-radius: var(--radius-l);
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: var(--shadow-medium);
+    transition: var(--transition-fast);
+}
+
+.btn-primary:active {
+    background: var(--green-dark);
+    transform: scale(0.98);
+}
+
+.btn-secondary {
+    width: 100%;
+    padding: 16px;
+    background: var(--white);
+    color: var(--green-main);
+    border: 2px solid var(--green-main);
+    border-radius: var(--radius-l);
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.btn-secondary:hover {
+    background: var(--green-main);
+    color: var(--white);
+}
+
+.btn-glass {
+    width: 100%;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.3);
+    border: none;
+    backdrop-filter: blur(14px);
+    border-radius: var(--radius-xl);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--black);
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.btn-glass:active {
+    transform: scale(0.97);
+}
+
+/* ======= КАРТОЧКА ЗАКАЗА ======= */
+
+.order-card {
+    background: var(--white);
+    border-radius: var(--radius-l);
+    padding: 16px;
+    box-shadow: var(--shadow-soft);
+    margin-bottom: 16px;
+    animation: fadeInUp 0.4s ease;
+}
+
+.order-card h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.order-card .order-info {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+}
+
+.order-status {
+    font-size: 14px;
+    background: var(--green-main);
+    color: white;
+    padding: 6px 12px;
+    border-radius: var(--radius-m);
+    display: inline-block;
+    font-weight: 600;
+}
+
+/* ======= НИЖНЕЕ МЕНЮ (как Uber/Bolt) ======= */
+
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 72px;
+    width: 100%;
+    max-width: 480px;
+    background: var(--white);
+    box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    border-top-left-radius: 22px;
+    border-top-right-radius: 22px;
+    z-index: 1000;
+}
+
+.nav-item {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 12px;
+    transition: var(--transition-fast);
+    cursor: pointer;
+}
+
+.nav-item img {
+    width: 26px;
+    height: 26px;
+    margin-bottom: 4px;
+}
+
+.nav-item.active {
+    color: var(--green-main);
+}
+
+/* ======= ПРОФИЛЬ/ИНФО ======= */
+
+.profile-block {
+    background: var(--white);
+    border-radius: var(--radius-l);
+    padding: 20px;
+    box-shadow: var(--shadow-soft);
+    margin-bottom: 16px;
+}
+
+.profile-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+/* ======= КАРТА РАЙОНОВ БЛОК ======= */
+
+.map-block {
+    width: 100%;
+    height: 240px;
+    background: #eaeaea;
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    box-shadow: var(--shadow-medium);
+    margin: 10px 0 20px 0;
+}
+
+/* ======= СКРОЛЛ НА ТЕЛЕФОНЕ ======= */
+
+body {
+    -webkit-overflow-scrolling: touch;
+}
+
+::-webkit-scrollbar {
+    width: 0;
+}
+
+/* ======= ЭФФЕКТЫ НАЖАТИЯ ======= */
+
+.clickable:active {
+    transform: scale(0.97);
+}
+.profile-avatar {
+    text-align: center;
+}
+
+.profile-avatar img {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 5px solid var(--primary);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    transition: 0.3s;
+}
+
+.profile-avatar img:hover {
+    transform: scale(1.05);
+}
+.welcome-body {
+    background: linear-gradient(135deg, #18b06d 0%, #0f8e57 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.welcome-screen {
+    text-align: center;
+    color: white;
+    padding: 20px;
+}
+
+.welcome-logo img {
+    width: 130px;
+    margin-bottom: 10px;
+    animation: float 3s infinite ease-in-out;
+}
+
+.welcome-logo h1 {
+    font-size: 34px;
+    margin-bottom: 6px;
+}
+
+.welcome-logo .subtitle {
+    font-size: 15px;
+    opacity: 0.9;
+    margin-bottom: 40px;
+}
+
+.welcome-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+/* Парящая анимация логотипа */
+@keyframes float {
+    0% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-8px);
+    }
+
+    100% {
+        transform: translateY(0);
+    }
+}
+.auth-body {
+    background: linear-gradient(135deg, #18b06d 0%, #0f8e57 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.auth-container {
+    width: 100%;
+    max-width: 360px;
+    padding: 20px;
+    text-align: center;
+    color: white;
+}
+
+.auth-title {
+    font-size: 32px;
+    margin-bottom: 6px;
+}
+
+.auth-subtitle {
+    font-size: 15px;
+    opacity: 0.85;
+    margin-bottom: 24px;
+}
+
+.auth-card {
+    padding: 24px;
+    border-radius: 16px;
+    backdrop-filter: blur(12px);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    margin-bottom: 14px;
+    background: white;
+}
+
+.auth-bottom-text {
+    margin-top: 18px;
+    font-size: 14px;
+}
+
+.auth-bottom-text a {
+    color: #fff;
+    text-decoration: underline;
+}

@@ -1,0 +1,90 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Click&Clean — Клиент</title>
+
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  <link rel="stylesheet" href="{% static 'css/ui.css' %}">
+  <link rel="stylesheet" href="{% static 'css/animations.css' %}">
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body class="aurora-body">
+
+  <div class="background-shapes"></div>
+
+  <div class="app-container page-transition">
+
+    <!-- БЛОК ПРОФИЛЯ -->
+    <div class="profile-block card-enter">
+      <h2 class="profile-title">Здравствуйте 👋</h2>
+      <p id="client-name" class="profile-info">Загрузка...</p>
+      <p class="profile-info" id="client-phone"></p>
+    </div>
+
+    <!-- КНОПКА СОЗДАТЬ ЗАКАЗ -->
+    <button class="btn-primary pulse" id="create-order-btn">
+      + Создать заказ
+    </button>
+
+    <h3 class="section-title">Ваши заказы</h3>
+
+    <!-- СПИСОК ЗАКАЗОВ -->
+    <div id="orders-list">
+      <div class="skeleton" style="height: 60px; margin-bottom: 10px;"></div>
+      <div class="skeleton" style="height: 60px; margin-bottom: 10px;"></div>
+    </div>
+
+  </div>
+
+  <!-- НИЖНЕЕ МЕНЮ -->
+  <div class="bottom-nav">
+    <div class="nav-item active" onclick="goHome()">
+      <img src="{% static 'icons/assets/nav-home.svg' %}">
+      Главная
+    </div>
+
+    <div class="nav-item role-indicator">
+      <span class="role-label">Режим</span>
+      <span class="role-value">Клиент</span>
+    </div>
+
+    <div class="nav-item" onclick="goProfile()">
+      <img src="{% static 'icons/assets/nav-profile.svg' %}">
+      Профиль
+    </div>
+
+    <div class="nav-item" onclick="toggleTheme()">
+      <img src="{% static 'icons/assets/nav-theme.svg' %}">
+      Тема
+    </div>
+  </div>
+
+  <script src="{% static 'js/api.js' %}"></script>
+  <script src="{% static 'js/client.js' %}"></script>
+  <script>
+    // Функции перехода между страницами
+    function goHome() {
+      window.location.href = '/client';
+    }
+    function goCourier() {
+      window.location.href = '/courier';
+    }
+    function goProfile() {
+      window.location.href = '/profile';
+    }
+    function toggleTheme() {
+      document.body.classList.toggle('dark');
+    }
+  </script>
+
+</body>
+
+</html>

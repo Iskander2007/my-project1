@@ -1,0 +1,45 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  <link rel="stylesheet" href="{% static 'css/ui.css' %}">
+  <link rel="stylesheet" href="{% static 'css/animations.css' %}">
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body class="welcome-body">
+  <!-- Маленький логотип в левом углу -->
+  <div class="logo-corner">
+    <svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="25" cy="25" r="24" fill="#18B06D" stroke="white" stroke-width="2" />
+      <text x="25" y="30" font-size="28" font-weight="bold" fill="white" text-anchor="middle">🚚</text>
+    </svg>
+  </div>
+
+  <div class="welcome-screen fade-in">
+    <!-- Логотип по центру -->
+    <div class="welcome-logo">
+      <img src="{% static 'icons/logo_new.png' %}" class="logo-main-img" alt="Click&Clean логотип">
+
+      <h1>Click&Clean</h1>
+      <p class="subtitle">Удобная уборка. Быстро. Просто. Надёжно.</p>
+    </div>
+
+
+    <!-- Кнопки -->
+    <div class="welcome-buttons">
+      <a class="btn-primary" href="/login">Войти</a>
+      <a class="btn-secondary" href="/register">Регистрация</a>
+    </div>
+  </div>
+
+</body>
+
+</html>

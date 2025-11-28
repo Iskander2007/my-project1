@@ -1,126 +1,83 @@
-/* =======================================
-   CLICK&CLEAN — CLIENT.JS
-   Личный кабинет клиента
-   ======================================= */
+(function () {
+    const nameEl = document.getElementById('client-name');
+    const phoneEl = document.getElementById('client-phone');
+    const ordersList = document.getElementById('orders-list');
+    const createBtn = document.getElementById('create-order-btn');
 
-const API = "http://127.0.0.1:8000";
-// На Render поменяем на https://clickclear-backend.onrender.com
-
-/* ===== ЗАГРУЗКА ПРОФИЛЯ ===== */
-
-async function loadClientProfile() {
-    const token = localStorage.getItem("access");
-    if (!token) return;
-
-    try {
-        const res = await fetch(`${API}/api/auth/me`, {
-            headers: { "Authorization": `Bearer ${token}` }
-        });
-
-        const data = await res.json();
-
-        if (!data.ok) {
-            alert("Сессия истекла. Войдите снова.");
-            return logout();
+    document.addEventListener('DOMContentLoaded', () => {
+        ensureClient().then(loadOrders);
+        if (createBtn) {
+            createBtn.addEventListener('click', () => window.location.href = '/orders/new');
         }
+    });
 
+    async function ensureClient() {
+        if (!window.ClickCleanAPI) {
+            window.location.href = '/login';
+            return null;
+        }
+        const { res, data } = await ClickCleanAPI.fetchJson('/api/auth/me');
+        if (res.status === 401 || !data || !data.ok) {
+            window.location.href = '/login';
+            return null;
+        }
         const user = data.user;
-
-        document.getElementById("client-name").textContent = user.name;
-        document.getElementById("client-phone").textContent = "Телефон: " + user.phone;
-
-    } catch (err) {
-        console.error(err);
-        alert("Ошибка связи с сервером");
+        if (user.role !== 'client') {
+            window.location.href = user.role === 'courier' ? '/courier' : '/profile';
+            return null;
+        }
+        if (nameEl) {
+            nameEl.textContent = user.name || 'Без имени';
+        }
+        if (phoneEl) {
+            phoneEl.textContent = user.phone ? `Телефон: ${user.phone}` : '';
+        }
+        return user;
     }
-}
 
-
-/* ===== ЗАГРУЗКА ЗАКАЗОВ ===== */
-
-async function loadClientOrders() {
-    const token = localStorage.getItem("access");
-    const list = document.getElementById("orders-list");
-
-    list.innerHTML = `
-        <div class="skeleton" style="height: 60px; margin-bottom: 10px;"></div>
-        <div class="skeleton" style="height: 60px; margin-bottom: 10px;"></div>
-    `;
-
-    try {
-        const res = await fetch(`${API}/api/my/orders`, {
-            headers: { "Authorization": `Bearer ${token}` }
-        });
-
-        const data = await res.json();
-
-        if (!data.ok) {
-            list.innerHTML = "<p>Ошибка загрузки заказов</p>";
+    async function loadOrders() {
+        if (!ordersList || !window.ClickCleanAPI) {
             return;
         }
-
-        if (data.orders.length === 0) {
-            list.innerHTML = "<p style='color: var(--text-muted);'>У вас пока нет заказов</p>";
+        ordersList.innerHTML = skeletonMarkup();
+        const { res, data } = await ClickCleanAPI.fetchJson('/api/my/orders');
+        if (res.status === 401) {
+            window.location.href = '/login';
             return;
         }
-
-        list.innerHTML = "";
-
-        data.orders.forEach(order => {
-            const card = document.createElement("div");
-            card.className = "order-card card-enter";
-
+        const orders = Array.isArray(data) ? data : (data && data.results) ? data.results : [];
+        if (!orders.length) {
+            ordersList.innerHTML = "<div class='empty-state'>У вас пока нет активных заказов</div>";
+            return;
+        }
+        ordersList.innerHTML = '';
+        orders.forEach(order => {
+            const card = document.createElement('div');
+            card.className = 'order-card card-enter';
             card.innerHTML = `
-                <h3>Заказ №${order.id}</h3>
-                <div class="order-info">
-                    Район: <b>${order.district_name}</b><br>
-                    Время: ${order.slot_time}
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                    <h3 style="margin:0;">Заказ #${order.id}</h3>
+                    <span style="font-weight:600;">${formatCurrency(order.amount)} ₸</span>
                 </div>
-                <div class="order-status">${order.status}</div>
+                <div class="order-info">
+                    ${order.district ? order.district.name : '—'} · ${order.date} · ${order.slot}
+                </div>
+                <div class="order-info">Вес: ${order.weight_kg ?? '—'} кг</div>
             `;
-
-            list.appendChild(card);
+            ordersList.appendChild(card);
         });
-
-    } catch (err) {
-        console.error(err);
-        list.innerHTML = "<p>Ошибка загрузки</p>";
     }
-}
 
+    function skeletonMarkup() {
+        return `
+            <div class="skeleton" style="height: 60px; margin-bottom: 10px;"></div>
+            <div class="skeleton" style="height: 60px; margin-bottom: 10px;"></div>
+        `;
+    }
 
-/* ===== КНОПКА СОЗДАТЬ ЗАКАЗ ===== */
-
-document.getElementById("create-order-btn").addEventListener("click", () => {
-    window.location.href = "orders.html";
-});
-
-
-/* ===== НАВИГАЦИЯ ===== */
-
-function goHome() {
-    window.location.href = "client.html";
-}
-
-function goOrders() {
-    window.location.href = "orders.html";
-}
-
-function goProfile() {
-    window.location.href = "client.html";
-}
-
-
-/* ===== ВЫХОД ===== */
-
-function logout() {
-    localStorage.clear();
-    window.location.href = "index.html";
-}
-
-
-/* ===== ЗАПУСК ===== */
-
-loadClientProfile();
-loadClientOrders();
-
+    function formatCurrency(value) {
+        const number = typeof value === 'number' ? value : parseFloat(value);
+        if (Number.isNaN(number)) return value;
+        return new Intl.NumberFormat('ru-RU').format(number);
+    }
+})();

@@ -21,11 +21,15 @@ class Order(models.Model):
     intercom = models.CharField(max_length=50, blank=True)
     date = models.DateField()
     slot = models.CharField(max_length=10, choices=Slot.choices)
+    weight_kg = models.DecimalField(max_digits=6, decimal_places=2, default=0)
     amount = models.DecimalField(max_digits=10, decimal_places=2)  # вознаграждение, ≥500
     notes = models.TextField(blank=True)
     photo_url = models.URLField(blank=True)
     status = models.CharField(max_length=20, choices=OrderStatus.choices, default=OrderStatus.NEW)
     payment_reserved = models.BooleanField(default=False)  # эскроу зарезервирован?
+    taken_at = models.DateTimeField(null=True, blank=True)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

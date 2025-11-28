@@ -1,0 +1,111 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация — Click&Clean</title>
+
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/ui.css' %}">
+    <link rel="stylesheet" href="{% static 'css/animations.css' %}">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body class="auth-body">
+
+    <div class="auth-container fade-in">
+
+        <h2 class="auth-title">Регистрация</h2>
+        <p class="auth-subtitle">Создайте аккаунт</p>
+
+        <div class="glass-card auth-card">
+
+            <input id="reg-name" type="text" class="input" placeholder="Имя">
+            <input id="reg-phone" type="tel" class="input" placeholder="Телефон">
+            <input id="reg-password" type="password" class="input" placeholder="Пароль">
+
+            <div class="role-toggle" id="role-toggle">
+                <button type="button" class="role-pill active" data-role="client">Я клиент</button>
+                <button type="button" class="role-pill" data-role="courier">Я курьер</button>
+            </div>
+            <input type="hidden" id="reg-role" value="client">
+
+            <button class="btn-primary" onclick="register()">Зарегистрироваться</button>
+
+            <p class="auth-bottom-text">
+                Уже есть аккаунт? <a href="/login">Войти</a>
+            </p>
+        </div>
+
+    </div>
+
+    <!-- НИЖНЕЕ МЕНЮ -->
+    <div class="bottom-nav">
+        <div class="nav-item" onclick="goHome()">
+            <img src="{% static 'icons/assets/nav-home.svg' %}">
+            Главная
+        </div>
+        <div class="nav-item" onclick="goCourier()">
+            <img src="{% static 'icons/assets/nav-courier.svg' %}">
+            Курьер
+        </div>
+        <div class="nav-item" onclick="goProfile()">
+            <img src="{% static 'icons/assets/nav-profile.svg' %}">
+            Профиль
+        </div>
+        <div class="nav-item" onclick="toggleTheme()">
+            <img src="{% static 'icons/assets/nav-theme.svg' %}">
+            Тема
+        </div>
+    </div>
+    <script>
+        function goHome() {
+            window.location.href = '/';
+        }
+        function goCourier() {
+            window.location.href = '/courier';
+        }
+        function goProfile() {
+            window.location.href = '/profile';
+        }
+        function toggleTheme() {
+            document.body.classList.toggle('dark');
+        }
+        const roleButtons = document.querySelectorAll('#role-toggle .role-pill');
+        const roleInput = document.getElementById('reg-role');
+        roleButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                roleButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                roleInput.value = btn.dataset.role;
+            });
+        });
+
+        async function register() {
+            const name = document.getElementById('reg-name').value;
+            const phone = document.getElementById('reg-phone').value;
+            const password = document.getElementById('reg-password').value;
+            const role = roleInput.value || 'client';
+            const res = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ phone, password, role, name })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                alert('Регистрация успешна!');
+                window.location.href = '/login';
+            } else {
+                alert((data.errors && JSON.stringify(data.errors)) || 'Ошибка регистрации');
+            }
+        }
+    </script>
+
+</body>
+
+</html>

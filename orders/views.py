@@ -1,7 +1,6 @@
 from rest_framework import generics, permissions, response, status
 from rest_framework.decorators import api_view, permission_classes
 from django.utils import timezone
-from django.db.models import Q
 from accounts.permissions import IsClient, IsCourier, IsAdmin
 from .models import Order, OrderStatus, OrderLog
 from .serializers import OrderListSerializer, OrderCreateSerializer
@@ -20,6 +19,18 @@ class MyOrdersClient(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated, IsClient]
     def get_queryset(self):
         return Order.objects.filter(client=self.request.user).exclude(status=OrderStatus.DONE)
+
+
+class MyCourierOrders(generics.ListAPIView):
+    serializer_class = OrderListSerializer
+    permission_classes = [permissions.IsAuthenticated, IsCourier]
+
+    def get_queryset(self):
+        return (
+            Order.objects.filter(courier=self.request.user)
+            .exclude(status__in=[OrderStatus.DONE, OrderStatus.CANCELED, OrderStatus.FAILED])
+            .order_by("-taken_at", "-created_at")
+        )
 
 class CreateOrder(generics.CreateAPIView):
     serializer_class = OrderCreateSerializer
@@ -47,16 +58,19 @@ def take_order(request, pk):
                 return response.Response({"detail":"Заказ уже недоступен"}, status=400)
             if _courier_has_overlap(user, order.date, order.slot):
                 return response.Response({"detail":"Слот занят другими заказами"}, status=400)
-            # Резерв средств на кошельке клиента
-            if order.client.balance < order.amount:
-                return response.Response({"detail":"Недостаточно средств у клиента"}, status=402)
-            order.client.balance -= order.amount
-            order.payment_reserved = True
+            # Попытка зарезервировать средства клиента, но без блокировки потока
+            if order.client.balance >= order.amount:
+                order.client.balance -= order.amount
+                order.payment_reserved = True
+            else:
+                order.payment_reserved = False
             order.courier = user
             order.status = OrderStatus.TAKEN
-            order.client.save()
+            order.taken_at = timezone.now()
+            if order.payment_reserved:
+                order.client.save(update_fields=["balance"])
+                Transaction.objects.create(user=order.client, type=TxType.HOLD, amount=order.amount, related_order_id=order.id)
             order.save()
-            Transaction.objects.create(user=order.client, type=TxType.HOLD, amount=order.amount, related_order_id=order.id)
             _log(order, user, "taken")
             return response.Response({"ok": True})
     except Order.DoesNotExist:
@@ -115,13 +129,17 @@ def complete_order(request, pk):
             order = Order.objects.select_for_update().get(id=pk)
             if user != order.courier and not IsAdmin().has_permission(request, None):
                 return response.Response({"detail":"Нет прав"}, status=403)
-            if not order.payment_reserved:
-                return response.Response({"detail":"Платёж не зарезервирован"}, status=400)
-            order.courier.balance += order.amount
-            Transaction.objects.create(user=order.courier, type=TxType.RELEASE, amount=order.amount, related_order_id=order.id)
-            order.payment_reserved = False
+            if not order.taken_at:
+                return response.Response({"detail":"Заказ ещё не назначен"}, status=400)
+            had_reserve = order.payment_reserved
+            if had_reserve:
+                order.courier.balance += order.amount
+                Transaction.objects.create(user=order.courier, type=TxType.RELEASE, amount=order.amount, related_order_id=order.id)
+                order.payment_reserved = False
             order.status = OrderStatus.DONE
-            order.save(); order.courier.save()
+            order.save()
+            if had_reserve:
+                order.courier.save()
             _log(order, user, "done")
             return response.Response({"ok": True})
     except Order.DoesNotExist:

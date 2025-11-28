@@ -1,0 +1,272 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Click&Clean — Профиль</title>
+
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/ui.css' %}">
+    <link rel="stylesheet" href="{% static 'css/animations.css' %}">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body class="aurora-body profile-page">
+
+    <div class="background-shapes"></div>
+
+    <div class="app-container page-transition profile-shell">
+
+        <div class="profile-hero card-enter">
+            <div class="avatar-stack">
+                <img id="avatar-img" src="{% static 'icons/assets/user.png' %}" alt="avatar" class="avatar-img">
+                <button id="change-avatar-btn" class="btn-glass change-avatar-btn"
+                    onclick="document.getElementById('avatarInput').click()">
+                    Сменить фото
+                </button>
+                <input type="file" id="avatarInput" accept="image/*" hidden>
+            </div>
+            <div class="profile-meta">
+                <p class="eyebrow">Ваш профиль</p>
+                <h2 id="profile-name">Загрузка...</h2>
+                <p id="profile-phone" class="profile-phone">+7•••</p>
+                <div class="meta-row">
+                    <span id="profile-role" class="status-pill">—</span>
+                    <button class="btn-link" id="edit-name-btn">Изменить имя</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-card-grid card-enter">
+            <div class="glass-card info-card">
+                <span class="label">Телефон</span>
+                <p id="profile-phone-compact" class="value">Загрузка...</p>
+            </div>
+            <div class="glass-card info-card">
+                <span class="label">Статус</span>
+                <p id="profile-status" class="value">—</p>
+            </div>
+            <div class="glass-card info-card">
+                <span class="label">Последний заказ</span>
+                <p id="profile-last-order" class="value">Данных нет</p>
+            </div>
+        </div>
+
+        <div class="glass-card actions-card card-enter">
+            <h3 class="card-title">Быстрые действия</h3>
+            <div class="action-buttons">
+                <button class="btn-secondary" id="open-orders-btn">Мои заказы</button>
+                <button class="btn-glass" id="support-btn">Поддержка</button>
+            </div>
+        </div>
+
+        <button id="logout-btn" class="btn-danger card-enter full-btn">
+            Выйти из аккаунта
+        </button>
+
+    </div>
+
+
+    <!-- НИЖНЕЕ МЕНЮ -->
+    <div class="bottom-nav">
+
+        <div class="nav-item" onclick="goHome()">
+            <img src="{% static 'icons/assets/nav-home.svg' %}">
+            Главная
+        </div>
+
+        <div class="nav-item" onclick="goCourier()">
+            <img src="{% static 'icons/assets/nav-courier.svg' %}">
+            Курьер
+        </div>
+
+        <div class="nav-item active" onclick="goProfile()">
+            <img src="{% static 'icons/assets/nav-profile.svg' %}">
+            Профиль
+        </div>
+
+        <div class="nav-item" onclick="toggleTheme()">
+            <img src="{% static 'icons/assets/nav-theme.svg' %}">
+            Тема
+        </div>
+
+    </div>
+
+
+    <script src="{% static 'js/api.js' %}"></script>
+    <script src="{% static 'js/profile.js' %}"></script>
+    <script>
+        function goHome() {
+            window.location.href = '/';
+        }
+        function goCourier() {
+            window.location.href = '/courier';
+        }
+        function goProfile() {
+            window.location.href = '/profile';
+        }
+        function toggleTheme() {
+            document.body.classList.toggle('dark');
+        }
+
+        const avatarImg = document.getElementById('avatar-img');
+        avatarImg.onerror = function () {
+            avatarImg.src = '{% static "icons/assets/user.png" %}';
+        };
+
+        const ordersBtn = document.getElementById('open-orders-btn');
+        if (ordersBtn) {
+            ordersBtn.addEventListener('click', () => window.location.href = '/orders');
+        }
+
+        const supportBtn = document.getElementById('support-btn');
+        if (supportBtn) {
+            supportBtn.addEventListener('click', () => window.location.href = 'mailto:support@clickclean.app');
+        }
+
+        async function loadProfile() {
+            try {
+                let res;
+                if (window.ClickCleanAPI) {
+                    res = await ClickCleanAPI.fetch('/api/auth/me');
+                } else {
+                    res = await fetch('/api/auth/me', { credentials: 'include' });
+                }
+
+                if (res.status === 401) {
+                    if (window.ClickCleanAPI) {
+                        ClickCleanAPI.clearTokens();
+                    }
+                    window.location.href = '/login';
+                    return;
+                }
+
+                const data = await res.json();
+                if (data.ok && data.user) {
+                    const name = data.user.name || 'Без имени';
+                    const phone = data.user.phone || '';
+                    document.getElementById('profile-name').textContent = name;
+                    document.getElementById('profile-phone').textContent = phone;
+                    document.getElementById('profile-phone-compact').textContent = phone || '—';
+                    document.getElementById('profile-role').textContent = formatRole(data.user.role);
+                    document.getElementById('profile-status').textContent = data.user.is_active === false ? 'Неактивен' : 'Активен';
+                    if (data.user.last_order_date) {
+                        document.getElementById('profile-last-order').textContent = data.user.last_order_date;
+                    }
+                    const avatarUrl = data.user.avatar_url;
+                    document.getElementById('avatar-img').src = avatarUrl || '{% static "icons/assets/user.png" %}';
+                } else {
+                    document.getElementById('profile-name').textContent = 'Ошибка загрузки';
+                    document.getElementById('profile-phone').textContent = '';
+                    document.getElementById('profile-phone-compact').textContent = '';
+                    document.getElementById('profile-role').textContent = '—';
+                    document.getElementById('profile-status').textContent = '—';
+                    document.getElementById('profile-last-order').textContent = '—';
+                    document.getElementById('avatar-img').src = '{% static "icons/assets/user.png" %}';
+                }
+            } catch (e) {
+                document.getElementById('profile-name').textContent = 'Ошибка';
+                document.getElementById('profile-phone').textContent = '';
+                document.getElementById('profile-phone-compact').textContent = '';
+                document.getElementById('profile-role').textContent = '—';
+                document.getElementById('profile-status').textContent = '—';
+                document.getElementById('profile-last-order').textContent = '—';
+                document.getElementById('avatar-img').src = '{% static "icons/assets/user.png" %}';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadProfile);
+
+        function formatRole(role) {
+            if (!role) return '—';
+            return role === 'courier' ? 'КУРЬЕР' : role === 'client' ? 'КЛИЕНТ' : role.toUpperCase();
+        }
+
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', async () => {
+                try {
+                    if (window.ClickCleanAPI) {
+                        await ClickCleanAPI.fetch('/api/auth/logout', { method: 'POST' });
+                        ClickCleanAPI.clearTokens();
+                    } else {
+                        await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+                    }
+                } catch (e) {
+                    console.error('Logout error', e);
+                }
+                window.location.href = '/login';
+            });
+        }
+
+        const avatarInput = document.getElementById('avatarInput');
+        if (avatarInput) {
+            avatarInput.addEventListener('change', async (event) => {
+                const file = event.target.files[0];
+                if (!file || !window.ClickCleanAPI) {
+                    return;
+                }
+                setAvatarLoading(true);
+                const formData = new FormData();
+                formData.append('avatar', file);
+                try {
+                    const { res, data } = await ClickCleanAPI.fetchJson('/api/auth/avatar', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    if (res.ok && data && (data.avatar || data.avatar_url)) {
+                        avatarImg.src = data.avatar || data.avatar_url;
+                    } else {
+                        alert('Не получилось обновить фото');
+                    }
+                } catch (error) {
+                    console.error('Avatar upload error', error);
+                    alert('Ошибка загрузки фото');
+                } finally {
+                    setAvatarLoading(false);
+                    avatarInput.value = '';
+                }
+            });
+        }
+
+        function setAvatarLoading(isLoading) {
+            const btn = document.getElementById('change-avatar-btn');
+            if (!btn) return;
+            btn.disabled = isLoading;
+            btn.textContent = isLoading ? 'Загрузка...' : 'Сменить фото';
+        }
+
+        const editNameBtn = document.getElementById('edit-name-btn');
+        if (editNameBtn) {
+            editNameBtn.addEventListener('click', async () => {
+                const newName = prompt('Введите новое имя');
+                if (!newName || !window.ClickCleanAPI) {
+                    return;
+                }
+                try {
+                    const { res } = await ClickCleanAPI.fetchJson('/api/auth/profile/update', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name: newName })
+                    });
+                    if (res.ok) {
+                        await loadProfile();
+                    } else {
+                        alert('Не удалось обновить имя');
+                    }
+                } catch (error) {
+                    console.error('Name update error', error);
+                    alert('Ошибка при обновлении имени');
+                }
+            });
+        }
+    </script>
+
+</body>
+
+</html>

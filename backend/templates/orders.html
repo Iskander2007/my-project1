@@ -1,0 +1,155 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Click&Clean — Новый заказ</title>
+
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  <link rel="stylesheet" href="{% static 'css/ui.css' %}">
+  <link rel="stylesheet" href="{% static 'css/animations.css' %}">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body class="aurora-body">
+
+  <div class="background-shapes"></div>
+
+  <div class="app-container page-transition">
+
+    <h2 class="card-enter page-heading">Новый заказ</h2>
+    <p class="card-enter page-subtitle">
+      После отправки заявка сразу появится у всех курьеров онлайн.
+    </p>
+
+    <form id="order-form" class="glass-card card-enter order-form">
+      <div class="order-form-grid">
+        <label class="form-field wide">
+          <span>Телефон для связи</span>
+          <input type="tel" id="contact-phone" placeholder="Например, +7 777 000 88 22" required>
+        </label>
+
+        <label class="form-field">
+          <span>Район</span>
+          <select id="district-select" required>
+            <option value="" disabled selected>Загрузка...</option>
+          </select>
+        </label>
+
+        <label class="form-field">
+          <span>Адрес</span>
+          <input type="text" id="address-input" placeholder="Улица, дом, квартира" required>
+        </label>
+
+        <button class="btn-glass" type="button" id="geocode-btn" style="margin-bottom: 8px;">
+          Определить координаты
+        </button>
+        <small id="geocode-status" style="display:block;margin-bottom:10px;color:var(--text-muted);"></small>
+
+        <div id="address-map" class="mini-map hidden"></div>
+        <input type="hidden" id="latitude-input">
+        <input type="hidden" id="longitude-input">
+
+        <label class="form-field small-row">
+          <span>Подъезд</span>
+          <input type="text" id="entrance-input" placeholder="№" maxlength="10">
+        </label>
+
+        <label class="form-field small-row">
+          <span>Этаж</span>
+          <input type="text" id="floor-input" placeholder="--" maxlength="10">
+        </label>
+
+        <label class="form-field small-row">
+          <span>Домофон</span>
+          <input type="text" id="intercom-input" placeholder="Код" maxlength="20">
+        </label>
+
+        <label class="form-field">
+          <span>Дата</span>
+          <input type="date" id="order-date" required>
+        </label>
+
+        <label class="form-field">
+          <span>Время</span>
+          <select id="slot-select" required>
+            <option value="" disabled selected>Загрузка...</option>
+          </select>
+        </label>
+
+        <label class="form-field">
+          <span>Вес мусора (кг)</span>
+          <input type="number" id="weight-input" min="1" step="0.1" placeholder="Например, 15" required>
+        </label>
+
+        <label class="form-field">
+          <span>Предложенная стоимость (₸)</span>
+          <input type="number" id="price-input" min="500" step="50" placeholder="Не менее 500" required>
+        </label>
+
+        <label class="form-field wide">
+          <span>Комментарий</span>
+          <textarea id="notes-input" rows="3" placeholder="Например: мешки у подъезда, нужен тележка"></textarea>
+        </label>
+      </div>
+
+      <div id="order-feedback" class="order-feedback"></div>
+
+      <button type="submit" class="btn-primary">Отправить заявку</button>
+      <button type="button" id="back-to-client" class="btn-secondary" style="margin-top: 12px;">Вернуться к
+        заказам</button>
+    </form>
+
+  </div>
+
+
+  <!-- НИЖНЕЕ МЕНЮ -->
+  <div class="bottom-nav">
+    <div class="nav-item" onclick="goHome()">
+      <img src="{% static 'icons/assets/nav-home.svg' %}">
+      Главная
+    </div>
+
+    <div class="nav-item" onclick="goCourier()">
+      <img src="{% static 'icons/assets/nav-courier.svg' %}">
+      Курьер
+    </div>
+
+    <div class="nav-item" onclick="goProfile()">
+      <img src="{% static 'icons/assets/nav-profile.svg' %}">
+      Профиль
+    </div>
+
+    <div class="nav-item" onclick="toggleTheme()">
+      <img src="{% static 'icons/assets/nav-theme.svg' %}">
+      Тема
+    </div>
+  </div>
+
+  <script src="{% static 'js/api.js' %}"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="{% static 'js/orders.js' %}"></script>
+  <script>
+    function goHome() {
+      window.location.href = '/client';
+    }
+    function goCourier() {
+      window.location.href = '/courier';
+    }
+    function goProfile() {
+      window.location.href = '/profile';
+    }
+    function toggleTheme() {
+      document.body.classList.toggle('dark');
+    }
+  </script>
+
+</body>
+
+</html>
