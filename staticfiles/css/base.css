@@ -6,17 +6,11 @@
 }
 
 body {
-    background: var(--bg);
-    color: var(--text);
-    transition: 0.3s;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 22px;
-    width: 100%;
-    height: 100%;
+    background: var(--bg-soft);
+    color: var(--black);
     font-family: 'Inter', sans-serif;
     -webkit-tap-highlight-color: transparent;
+    margin: 0;
 }
 
 :root {
@@ -55,20 +49,19 @@ body {
 html,
 body {
     width: 100%;
-    height: 100%;
-    background: var(--bg-soft);
+    min-height: 200vh;
     font-family: 'Inter', sans-serif;
     color: var(--black);
     -webkit-tap-highlight-color: transparent;
 }
 
 /* Для телефонов */
-body {
+/* body {
     display: flex;
     justify-content: center;
     align-items: center;
     padding: 22px;
-}
+} */
 
 /* Центрируем приложение */
 .app-container {
