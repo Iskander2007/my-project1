@@ -129,6 +129,7 @@
                 phoneInput.value = cachedPhone;
             }
             resetGeocodeState();
+            window.location.href = '/client';
         } else {
             const message = (data && (data.detail || data.error)) || 'Не удалось создать заказ';
             setFeedback(message, 'error');

@@ -54,6 +54,12 @@
         orders.forEach(order => {
             const card = document.createElement('div');
             card.className = 'order-card card-enter';
+            const notesBlock = order.notes ? `
+                <div class="order-note" style="margin-top:10px;">
+                    <strong>Комментарий</strong>
+                    <div>${formatNotes(order.notes)}</div>
+                </div>
+            ` : '';
             card.innerHTML = `
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
                     <h3 style="margin:0;">Заказ #${order.id}</h3>
@@ -63,6 +69,7 @@
                     ${order.district ? order.district.name : '—'} · ${order.date} · ${order.slot}
                 </div>
                 <div class="order-info">Вес: ${order.weight_kg ?? '—'} кг</div>
+                ${notesBlock}
             `;
             ordersList.appendChild(card);
         });
@@ -79,5 +86,22 @@
         const number = typeof value === 'number' ? value : parseFloat(value);
         if (Number.isNaN(number)) return value;
         return new Intl.NumberFormat('ru-RU').format(number);
+    }
+
+    function escapeHtml(str) {
+        return str.replace(/[&<>"']/g, (char) => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;',
+        }[char] || char));
+    }
+
+    function formatNotes(value) {
+        if (!value) {
+            return '';
+        }
+        return escapeHtml(value).replace(/\n/g, '<br>');
     }
 })();

@@ -17,7 +17,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
 
-<body class="aurora-body">
+<body class="aurora-body dark">
 
     <div class="background-shapes"></div>
 
@@ -57,20 +57,9 @@
                 <div id="active-order-timer" class="timer-chip">00:00</div>
             </div>
             <div id="active-order-meta" class="active-order-meta"></div>
+            <div id="active-order-notes" class="order-note hidden"></div>
             <div id="active-order-map" class="mini-map"></div>
             <button id="complete-order-btn" class="btn-primary full-btn" disabled>Завершить заказ</button>
-        </div>
-
-        <!-- Карта районов -->
-        <div class="glass-card card-enter" style="margin-bottom: 16px;">
-            <h3 class="card-title">Активные зоны</h3>
-
-            <div id="courier-map" class="fake-map">
-                <div class="zone z1"></div>
-                <div class="zone z2"></div>
-                <div class="zone z3"></div>
-                <div class="zone z4"></div>
-            </div>
         </div>
 
         <!-- Лента заказов -->
@@ -79,6 +68,15 @@
         <div id="courier-orders" style="margin-top: 10px;">
             <div class="skeleton" style="height: 70px; margin-bottom: 10px;"></div>
             <div class="skeleton" style="height: 70px; margin-bottom: 10px;"></div>
+        </div>
+
+        <h3 class="section-title compact" style="margin-top: 22px;">История заказов</h3>
+
+        <button id="clear-history-btn" class="btn-secondary" style="margin-bottom: 12px;">Очистить историю</button>
+
+        <div id="courier-history" class="history-list">
+            <div class="skeleton" style="height: 60px; margin-bottom: 10px;"></div>
+            <div class="skeleton" style="height: 60px; margin-bottom: 10px;"></div>
         </div>
 
     </div>

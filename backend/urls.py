@@ -19,8 +19,8 @@ from meta.views import DistrictList, slots_list
 
 # ORDERS
 from orders.views import (
-    OrdersFeed, MyOrdersClient, MyCourierOrders, CreateOrder,
-    take_order, cancel_order, mark_failed, complete_order
+    OrdersFeed, MyOrdersClient, MyCourierOrders, MyCourierHistory, CreateOrder,
+    take_order, cancel_order, mark_failed, complete_order, clear_courier_history
 )
 
 # WALLET
@@ -70,6 +70,8 @@ urlpatterns = [
     path("api/orders", OrdersFeed.as_view()),
     path("api/my/orders", MyOrdersClient.as_view()),
     path("api/my/courier/orders", MyCourierOrders.as_view()),
+    path("api/my/courier/history", MyCourierHistory.as_view()),
+    path("api/my/courier/history/clear", clear_courier_history),
     path("api/orders/create", CreateOrder.as_view()),
     path("api/orders/<int:pk>/take", take_order),
     path("api/orders/<int:pk>/cancel", cancel_order),

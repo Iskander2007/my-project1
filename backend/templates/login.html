@@ -14,107 +14,171 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
 
-<body class="auth-body">
+<body class="aurora-body auth-page dark">
 
-    <div class="auth-container fade-in">
+    <div class="background-shapes"></div>
 
-        <h2 class="auth-title">Вход</h2>
-        <p class="auth-subtitle">Добро пожаловать 👋</p>
+    <div class="app-container auth-shell page-transition">
 
-        <div class="glass-card auth-card">
-
-            <input id="login-phone" type="tel" class="input" placeholder="Телефон">
-            <input id="login-password" type="password" class="input" placeholder="Пароль">
-
-            <button class="btn-primary" onclick="login()">Войти</button>
-
-            <p class="auth-bottom-text">
-                Нет аккаунта? <a href="/register">Регистрация</a>
-            </p>
+        <div class="auth-hero card-enter">
+            <span class="auth-badge">Click&Clean</span>
+            <h1>Рады видеть вас снова</h1>
+            <p>Войдите в аккаунт, чтобы отслеживать заказы, обновлять профиль и работать без задержек.</p>
         </div>
 
-    </div>
+        <div class="glass-card auth-panel card-enter">
+            <div class="auth-panel-header">
+                <h2>Вход в аккаунт</h2>
+                <p>Введите телефон и пароль от Click&Clean</p>
+            </div>
 
-    <!-- НИЖНЕЕ МЕНЮ -->
-    <div class="bottom-nav">
-        <div class="nav-item" onclick="goHome()">
-            <img src="{% static 'icons/assets/nav-home.svg' %}">
-            Главная
+            <form id="login-form" class="auth-form" autocomplete="on">
+                <div class="form-field">
+                    <span>Телефон</span>
+                    <input id="login-phone" type="tel" placeholder="Например, +7 700 000 00 00" autocomplete="tel"
+                        required>
+                </div>
+
+                <div class="form-field">
+                    <span>Пароль</span>
+                    <input id="login-password" type="password" placeholder="Введите пароль"
+                        autocomplete="current-password" required>
+                </div>
+
+                <div id="login-feedback" class="auth-feedback">
+                    &nbsp;
+                </div>
+
+                <button id="login-submit" class="btn-primary full-btn" type="submit">Войти</button>
+            </form>
+
+            <div class="auth-meta">
+                <span>Нет аккаунта?</span>
+                <a class="auth-link" href="/register">Зарегистрироваться</a>
+            </div>
         </div>
-        <div class="nav-item" onclick="goCourier()">
-            <img src="{% static 'icons/assets/nav-courier.svg' %}">
-            Курьер
+
+        <div class="auth-footer card-enter">
+            <a class="auth-link subtle" href="/">← На главную</a>
+            <button class="btn-link" type="button" id="theme-toggle">Сменить тему</button>
         </div>
-        <div class="nav-item" onclick="goProfile()">
-            <img src="{% static 'icons/assets/nav-profile.svg' %}">
-            Профиль
-        </div>
-        <div class="nav-item" onclick="toggleTheme()">
-            <img src="{% static 'icons/assets/nav-theme.svg' %}">
-            Тема
-        </div>
+
     </div>
 
     <script src="{% static 'js/api.js' %}"></script>
     <script>
-        function goHome() {
-            window.location.href = '/';
-        }
-        function goCourier() {
-            window.location.href = '/courier';
-        }
-        function goProfile() {
-            window.location.href = '/profile';
-        }
-        function toggleTheme() {
-            document.body.classList.toggle('dark');
-        }
-        async function login() {
-            const phone = document.getElementById('login-phone').value;
-            const password = document.getElementById('login-password').value;
-            const res = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ phone, password })
-            });
-            const data = await res.json();
-            if (data.ok) {
-                if (window.ClickCleanAPI) {
-                    ClickCleanAPI.setTokens(data);
-                }
-                await redirectByRole();
-            } else {
-                alert(data.error || 'Ошибка входа');
-            }
-        }
+        (function () {
+            const loginForm = document.getElementById('login-form');
+            const phoneInput = document.getElementById('login-phone');
+            const passwordInput = document.getElementById('login-password');
+            const loginButton = document.getElementById('login-submit');
+            const feedbackEl = document.getElementById('login-feedback');
+            const themeToggle = document.getElementById('theme-toggle');
 
-        async function redirectByRole() {
-            if (!window.ClickCleanAPI) {
-                window.location.href = '/profile';
-                return;
+            if (themeToggle) {
+                themeToggle.addEventListener('click', () => {
+                    document.body.classList.toggle('dark');
+                });
             }
-            try {
-                const res = await ClickCleanAPI.fetch('/api/auth/me');
-                if (res.status === 401) {
-                    window.location.href = '/login';
+
+            if (loginForm) {
+                loginForm.addEventListener('submit', handleLogin);
+            }
+
+            function setFeedback(message = '', type = '') {
+                if (!feedbackEl) {
                     return;
                 }
-                const data = await res.json();
-                if (data.ok && data.user) {
-                    if (data.user.role === 'courier') {
-                        window.location.href = '/courier';
+                feedbackEl.textContent = message || '\u00a0';
+                feedbackEl.classList.remove('error', 'success');
+                if (type) {
+                    feedbackEl.classList.add(type);
+                }
+            }
+
+            function setLoading(isLoading) {
+                if (!loginButton) {
+                    return;
+                }
+                loginButton.disabled = isLoading;
+                loginButton.textContent = isLoading ? 'Входим...' : 'Войти';
+            }
+
+            async function handleLogin(event) {
+                event.preventDefault();
+
+                const phone = phoneInput ? phoneInput.value.trim() : '';
+                const password = passwordInput ? passwordInput.value.trim() : '';
+
+                if (!phone || !password) {
+                    setFeedback('Введите телефон и пароль', 'error');
+                    return;
+                }
+
+                setLoading(true);
+                setFeedback();
+
+                try {
+                    const response = await fetch('/api/auth/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ phone, password })
+                    });
+
+                    let data = {};
+                    try {
+                        data = await response.json();
+                    } catch (parseError) {
+                        data = {};
+                    }
+
+                    if (response.ok && data && data.ok) {
+                        if (window.ClickCleanAPI) {
+                            ClickCleanAPI.setTokens(data);
+                        }
+                        setFeedback('Готовим рабочее пространство...', 'success');
+                        await redirectByRole();
                         return;
                     }
-                    window.location.href = '/client';
+
+                    const errorMessage = (data && data.error) || 'Не удалось войти, проверьте данные.';
+                    setFeedback(errorMessage, 'error');
+                } catch (networkError) {
+                    setFeedback('Сеть недоступна. Попробуйте ещё раз.', 'error');
+                } finally {
+                    setLoading(false);
+                }
+            }
+
+            async function redirectByRole() {
+                if (!window.ClickCleanAPI) {
+                    window.location.href = '/profile';
                     return;
                 }
-            } catch (error) {
-                console.error('Role redirect error', error);
+                try {
+                    const res = await ClickCleanAPI.fetch('/api/auth/me');
+                    if (res.status === 401) {
+                        ClickCleanAPI.clearTokens();
+                        window.location.href = '/login';
+                        return;
+                    }
+                    const data = await res.json();
+                    if (data.ok && data.user) {
+                        if (data.user.role === 'courier') {
+                            window.location.href = '/courier';
+                            return;
+                        }
+                        window.location.href = '/client';
+                        return;
+                    }
+                } catch (error) {
+                    console.error('Role redirect error', error);
+                }
+                window.location.href = '/profile';
             }
-            window.location.href = '/profile';
-        }
+        })();
     </script>
 
 </body>

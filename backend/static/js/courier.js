@@ -12,6 +12,8 @@
     const activeTimer = document.getElementById('active-order-timer');
     const completeBtn = document.getElementById('complete-order-btn');
     const mapEl = document.getElementById('active-order-map');
+    const historyContainer = document.getElementById('courier-history');
+    const clearHistoryBtn = document.getElementById('clear-history-btn');
 
     let timerInterval = null;
     let activeOrder = null;
@@ -21,11 +23,13 @@
     let routeLine = null;
     let courierCoords = null;
     let geoWatchId = null;
+    const activeNotesEl = document.getElementById('active-order-notes');
 
     document.addEventListener('DOMContentLoaded', () => {
         ensureCourier().then(() => {
             loadActiveOrder();
             loadOrders();
+            loadHistory();
         });
         if (statusToggle) {
             statusToggle.addEventListener('change', handleStatusChange);
@@ -36,6 +40,9 @@
                     completeActiveOrder(activeOrder.id);
                 }
             });
+        }
+        if (clearHistoryBtn) {
+            clearHistoryBtn.addEventListener('click', clearHistory);
         }
     });
 
@@ -95,6 +102,12 @@
         orders.forEach(order => {
             const card = document.createElement('div');
             card.className = 'order-card card-enter';
+            const notesBlock = order.notes ? `
+                <div class="order-note">
+                    <strong>Комментарий клиента</strong>
+                    <div>${formatNotes(order.notes)}</div>
+                </div>
+            ` : '';
             card.innerHTML = `
                 <div style="display:flex;justify-content:space-between;align-items:center;">
                     <h3 style="margin:0;">${order.district ? order.district.name : 'Заказ'} · #${order.id}</h3>
@@ -103,11 +116,86 @@
                 <div class="order-info">${order.address}</div>
                 <div class="order-info">${order.date} · ${order.slot}</div>
                 <div class="order-info">Вес: ${order.weight_kg ?? '—'} кг</div>
+                ${notesBlock}
                 <button class="btn-primary" data-take="${order.id}" style="margin-top:10px;">Взять заказ</button>
             `;
             ordersContainer.appendChild(card);
         });
         attachTakeHandlers();
+    }
+
+    async function loadHistory() {
+        if (!historyContainer || !window.ClickCleanAPI) return;
+        historyContainer.innerHTML = historySkeleton();
+        const { res, data } = await ClickCleanAPI.fetchJson('/api/my/courier/history');
+        if (res.status === 401) {
+            window.location.href = '/login';
+            return;
+        }
+        const orders = Array.isArray(data) ? data : (data && data.results) ? data.results : [];
+        if (clearHistoryBtn) {
+            clearHistoryBtn.disabled = !orders.length;
+        }
+        if (!orders.length) {
+            historyContainer.innerHTML = "<div class='empty-state'>Пока нет выполненных заказов</div>";
+            return;
+        }
+        historyContainer.innerHTML = '';
+        orders.forEach(order => {
+            const card = document.createElement('div');
+            card.className = 'order-card history-card card-enter';
+            const notesBlock = order.notes ? `
+                <div class="order-note" style="margin-top:8px;">
+                    <strong>Комментарий клиента</strong>
+                    <div>${formatNotes(order.notes)}</div>
+                </div>
+            ` : '';
+            card.innerHTML = `
+                <div class="history-meta">
+                    <div>
+                        <h4>${order.district ? order.district.name : 'Заказ'} · #${order.id}</h4>
+                        <p class="history-address">${order.address}</p>
+                    </div>
+                    <div class="history-amount">${formatCurrency(order.amount)} ₸</div>
+                </div>
+                <div class="history-details">
+                    <span>${formatDate(order.date)} · ${order.slot}</span>
+                    <span>Вес: ${formatWeight(order.weight_kg)}</span>
+                    <span class="history-pill">Выполнен</span>
+                </div>
+                ${notesBlock}
+            `;
+            historyContainer.appendChild(card);
+        });
+    }
+
+    async function clearHistory() {
+        if (!window.ClickCleanAPI || !clearHistoryBtn) return;
+        const previousLabel = clearHistoryBtn.textContent;
+        clearHistoryBtn.disabled = true;
+        clearHistoryBtn.textContent = 'Очищаем...';
+        let redirect = false;
+        try {
+            const { res, data } = await ClickCleanAPI.fetchJson('/api/my/courier/history/clear', {
+                method: 'POST',
+            });
+            if (res.status === 401) {
+                window.location.href = '/login';
+                redirect = true;
+            } else if (!res.ok) {
+                const message = (data && (data.detail || data.error)) || 'Не удалось очистить историю';
+                alert(message);
+            }
+        } catch (error) {
+            console.error('Clear history error', error);
+            alert('Ошибка при очистке истории');
+        }
+        if (redirect) {
+            return;
+        }
+        clearHistoryBtn.textContent = previousLabel;
+        await loadHistory();
+        clearHistoryBtn.disabled = historyContainer.querySelector('.history-card') === null;
     }
 
     function attachTakeHandlers() {
@@ -184,6 +272,15 @@
             completeBtn.disabled = false;
             completeBtn.textContent = 'Завершить заказ';
         }
+        if (activeNotesEl) {
+            if (activeOrder.notes) {
+                activeNotesEl.innerHTML = `<strong>Комментарий клиента</strong><div>${formatNotes(activeOrder.notes)}</div>`;
+                activeNotesEl.classList.remove('hidden');
+            } else {
+                activeNotesEl.classList.add('hidden');
+                activeNotesEl.innerHTML = '';
+            }
+        }
         startTimer();
         initLiveMap();
         updateRoute();
@@ -220,6 +317,7 @@
             completeBtn.textContent = 'Готово';
             await loadActiveOrder();
             loadOrders();
+            loadHistory();
             setTimeout(() => {
                 if (completeBtn) {
                     completeBtn.textContent = 'Завершить заказ';
@@ -318,14 +416,59 @@
         `;
     }
 
+    function historySkeleton() {
+        return `
+            <div class="skeleton" style="height: 60px; margin-bottom: 10px;"></div>
+            <div class="skeleton" style="height: 60px; margin-bottom: 10px;"></div>
+        `;
+    }
+
     function formatCurrency(value) {
         const number = typeof value === 'number' ? value : parseFloat(value);
         if (Number.isNaN(number)) return value;
         return new Intl.NumberFormat('ru-RU').format(number);
     }
 
+    function formatDate(value) {
+        if (!value) return '—';
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) {
+            return value;
+        }
+        return new Intl.DateTimeFormat('ru-RU', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+        }).format(date);
+    }
+
+    function formatWeight(value) {
+        const number = typeof value === 'number' ? value : parseFloat(value);
+        if (Number.isNaN(number)) {
+            return '—';
+        }
+        return `${number} кг`;
+    }
+
     function pad(value) {
         return String(value).padStart(2, '0');
+    }
+
+    function escapeHtml(str) {
+        return str.replace(/[&<>"']/g, (char) => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;',
+        }[char] || char));
+    }
+
+    function formatNotes(value) {
+        if (!value) {
+            return '';
+        }
+        return escapeHtml(value).replace(/\n/g, '<br>');
     }
 
 })();

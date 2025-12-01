@@ -16,27 +16,24 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
 
-<body class="aurora-body">
+<body class="aurora-body dark">
 
   <div class="background-shapes"></div>
 
   <div class="app-container page-transition">
 
-    <!-- БЛОК ПРОФИЛЯ -->
     <div class="profile-block card-enter">
       <h2 class="profile-title">Здравствуйте 👋</h2>
       <p id="client-name" class="profile-info">Загрузка...</p>
       <p class="profile-info" id="client-phone"></p>
     </div>
 
-    <!-- КНОПКА СОЗДАТЬ ЗАКАЗ -->
     <button class="btn-primary pulse" id="create-order-btn">
       + Создать заказ
     </button>
 
     <h3 class="section-title">Ваши заказы</h3>
 
-    <!-- СПИСОК ЗАКАЗОВ -->
     <div id="orders-list">
       <div class="skeleton" style="height: 60px; margin-bottom: 10px;"></div>
       <div class="skeleton" style="height: 60px; margin-bottom: 10px;"></div>
@@ -70,7 +67,6 @@
   <script src="{% static 'js/api.js' %}"></script>
   <script src="{% static 'js/client.js' %}"></script>
   <script>
-    // Функции перехода между страницами
     function goHome() {
       window.location.href = '/client';
     }

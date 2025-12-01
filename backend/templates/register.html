@@ -14,96 +14,193 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
 
-<body class="auth-body">
+<body class="aurora-body auth-page dark">
 
-    <div class="auth-container fade-in">
+    <div class="background-shapes"></div>
 
-        <h2 class="auth-title">Регистрация</h2>
-        <p class="auth-subtitle">Создайте аккаунт</p>
+    <div class="app-container auth-shell page-transition">
 
-        <div class="glass-card auth-card">
+        <div class="auth-hero card-enter">
+            <span class="auth-badge">Click&Clean</span>
+            <h1>Создайте аккаунт за минуту</h1>
+            <p>Выберите роль, укажите контакты и начните пользоваться сервисом без задержек.</p>
+        </div>
 
-            <input id="reg-name" type="text" class="input" placeholder="Имя">
-            <input id="reg-phone" type="tel" class="input" placeholder="Телефон">
-            <input id="reg-password" type="password" class="input" placeholder="Пароль">
-
-            <div class="role-toggle" id="role-toggle">
-                <button type="button" class="role-pill active" data-role="client">Я клиент</button>
-                <button type="button" class="role-pill" data-role="courier">Я курьер</button>
+        <div class="glass-card auth-panel card-enter">
+            <div class="auth-panel-header">
+                <h2>Регистрация</h2>
+                <p>Заполните данные, чтобы продолжить</p>
             </div>
-            <input type="hidden" id="reg-role" value="client">
 
-            <button class="btn-primary" onclick="register()">Зарегистрироваться</button>
+            <form id="register-form" class="auth-form" autocomplete="on">
+                <div class="form-field">
+                    <span>Имя</span>
+                    <input id="reg-name" type="text" placeholder="Как к вам обращаться" autocomplete="name" required>
+                </div>
 
-            <p class="auth-bottom-text">
-                Уже есть аккаунт? <a href="/login">Войти</a>
-            </p>
+                <div class="form-field">
+                    <span>Телефон</span>
+                    <input id="reg-phone" type="tel" placeholder="Например, +7 700 000 00 00" autocomplete="tel"
+                        required>
+                </div>
+
+                <div class="form-field">
+                    <span>Пароль</span>
+                    <input id="reg-password" type="password" placeholder="Придумайте пароль" autocomplete="new-password"
+                        required>
+                </div>
+
+                <div class="role-toggle auth-role-toggle" id="role-toggle">
+                    <button type="button" class="role-pill active" data-role="client">Я клиент</button>
+                    <button type="button" class="role-pill" data-role="courier">Я курьер</button>
+                </div>
+                <input type="hidden" id="reg-role" value="client">
+
+                <div id="register-feedback" class="auth-feedback">
+                    &nbsp;
+                </div>
+
+                <button id="register-submit" class="btn-primary full-btn" type="submit">Зарегистрироваться</button>
+            </form>
+
+            <div class="auth-meta">
+                <span>Уже есть аккаунт?</span>
+                <a class="auth-link" href="/login">Войти</a>
+            </div>
+        </div>
+
+        <div class="auth-footer card-enter">
+            <a class="auth-link subtle" href="/">← На главную</a>
+            <button class="btn-link" type="button" id="theme-toggle">Сменить тему</button>
         </div>
 
     </div>
 
-    <!-- НИЖНЕЕ МЕНЮ -->
-    <div class="bottom-nav">
-        <div class="nav-item" onclick="goHome()">
-            <img src="{% static 'icons/assets/nav-home.svg' %}">
-            Главная
-        </div>
-        <div class="nav-item" onclick="goCourier()">
-            <img src="{% static 'icons/assets/nav-courier.svg' %}">
-            Курьер
-        </div>
-        <div class="nav-item" onclick="goProfile()">
-            <img src="{% static 'icons/assets/nav-profile.svg' %}">
-            Профиль
-        </div>
-        <div class="nav-item" onclick="toggleTheme()">
-            <img src="{% static 'icons/assets/nav-theme.svg' %}">
-            Тема
-        </div>
-    </div>
+    <script src="{% static 'js/api.js' %}"></script>
     <script>
-        function goHome() {
-            window.location.href = '/';
-        }
-        function goCourier() {
-            window.location.href = '/courier';
-        }
-        function goProfile() {
-            window.location.href = '/profile';
-        }
-        function toggleTheme() {
-            document.body.classList.toggle('dark');
-        }
-        const roleButtons = document.querySelectorAll('#role-toggle .role-pill');
-        const roleInput = document.getElementById('reg-role');
-        roleButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                roleButtons.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                roleInput.value = btn.dataset.role;
-            });
-        });
+        (function () {
+            const registerForm = document.getElementById('register-form');
+            const nameInput = document.getElementById('reg-name');
+            const phoneInput = document.getElementById('reg-phone');
+            const passwordInput = document.getElementById('reg-password');
+            const roleInput = document.getElementById('reg-role');
+            const roleButtons = document.querySelectorAll('#role-toggle .role-pill');
+            const feedbackEl = document.getElementById('register-feedback');
+            const submitBtn = document.getElementById('register-submit');
+            const themeToggle = document.getElementById('theme-toggle');
 
-        async function register() {
-            const name = document.getElementById('reg-name').value;
-            const phone = document.getElementById('reg-phone').value;
-            const password = document.getElementById('reg-password').value;
-            const role = roleInput.value || 'client';
-            const res = await fetch('/api/auth/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ phone, password, role, name })
-            });
-            const data = await res.json();
-            if (data.ok) {
-                alert('Регистрация успешна!');
-                window.location.href = '/login';
-            } else {
-                alert((data.errors && JSON.stringify(data.errors)) || 'Ошибка регистрации');
+            if (themeToggle) {
+                themeToggle.addEventListener('click', () => {
+                    document.body.classList.toggle('dark');
+                });
             }
-        }
+
+            roleButtons.forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    roleButtons.forEach((item) => item.classList.remove('active'));
+                    btn.classList.add('active');
+                    if (roleInput) {
+                        roleInput.value = btn.dataset.role || 'client';
+                    }
+                });
+            });
+
+            if (registerForm) {
+                registerForm.addEventListener('submit', handleRegister);
+            }
+
+            function setFeedback(message = '', type = '') {
+                if (!feedbackEl) {
+                    return;
+                }
+                feedbackEl.textContent = message || '\u00a0';
+                feedbackEl.classList.remove('error', 'success');
+                if (type) {
+                    feedbackEl.classList.add(type);
+                }
+            }
+
+            function setLoading(isLoading) {
+                if (!submitBtn) {
+                    return;
+                }
+                submitBtn.disabled = isLoading;
+                submitBtn.textContent = isLoading ? 'Создаём аккаунт...' : 'Зарегистрироваться';
+            }
+
+            function extractError(errors) {
+                if (!errors) {
+                    return '';
+                }
+                if (typeof errors === 'string') {
+                    return errors;
+                }
+                if (Array.isArray(errors)) {
+                    return errors[0] || '';
+                }
+                const firstKey = Object.keys(errors)[0];
+                if (!firstKey) {
+                    return '';
+                }
+                const value = errors[firstKey];
+                if (Array.isArray(value)) {
+                    return value[0] || '';
+                }
+                if (typeof value === 'string') {
+                    return value;
+                }
+                return '';
+            }
+
+            async function handleRegister(event) {
+                event.preventDefault();
+
+                const name = nameInput ? nameInput.value.trim() : '';
+                const phone = phoneInput ? phoneInput.value.trim() : '';
+                const password = passwordInput ? passwordInput.value.trim() : '';
+                const role = roleInput ? roleInput.value : 'client';
+
+                if (!name || !phone || !password) {
+                    setFeedback('Заполните все поля, пожалуйста.', 'error');
+                    return;
+                }
+
+                setLoading(true);
+                setFeedback();
+
+                try {
+                    const response = await fetch('/api/auth/register', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ phone, password, role, name })
+                    });
+
+                    let data = {};
+                    try {
+                        data = await response.json();
+                    } catch (parseError) {
+                        data = {};
+                    }
+
+                    if (response.ok && data && data.ok) {
+                        setFeedback('Готово! Перенаправляем на вход...', 'success');
+                        setTimeout(() => {
+                            window.location.href = '/login';
+                        }, 800);
+                        return;
+                    }
+
+                    const errorMessage = (data && (data.error || extractError(data.errors))) || 'Не удалось создать аккаунт.';
+                    setFeedback(errorMessage, 'error');
+                } catch (networkError) {
+                    setFeedback('Нет связи с сервером. Повторите попытку позже.', 'error');
+                } finally {
+                    setLoading(false);
+                }
+            }
+        })();
     </script>
 
 </body>

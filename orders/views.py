@@ -27,10 +27,40 @@ class MyCourierOrders(generics.ListAPIView):
 
     def get_queryset(self):
         return (
-            Order.objects.filter(courier=self.request.user)
+            Order.objects.select_related("district", "client").filter(courier=self.request.user)
             .exclude(status__in=[OrderStatus.DONE, OrderStatus.CANCELED, OrderStatus.FAILED])
             .order_by("-taken_at", "-created_at")
         )
+
+
+class MyCourierHistory(generics.ListAPIView):
+    serializer_class = OrderListSerializer
+    permission_classes = [permissions.IsAuthenticated, IsCourier]
+
+    def get_queryset(self):
+        return (
+            Order.objects.select_related("district", "client")
+            .filter(
+                courier=self.request.user,
+                status=OrderStatus.DONE,
+                courier_history_hidden=False,
+            )
+            .order_by("-taken_at", "-created_at")
+        )
+
+
+@api_view(["POST"])
+@permission_classes([permissions.IsAuthenticated, IsCourier])
+def clear_courier_history(request):
+    user = request.user
+    updated = (
+        Order.objects.filter(
+            courier=user,
+            status=OrderStatus.DONE,
+            courier_history_hidden=False,
+        ).update(courier_history_hidden=True)
+    )
+    return response.Response({"ok": True, "cleared": updated})
 
 class CreateOrder(generics.CreateAPIView):
     serializer_class = OrderCreateSerializer
