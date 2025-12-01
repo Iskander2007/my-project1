@@ -47,7 +47,11 @@
 html,
 body {
     width: 100%;
+<<<<<<< HEAD
     min-height: 100%;
+=======
+    background: var(--bg-soft);
+>>>>>>> 4797ffb2ddba11cce9156497dd5ef3df24b6047c
     font-family: 'Inter', sans-serif;
     color: var(--text);
     background: var(--bg-soft);
